@@ -1,0 +1,67 @@
+name: Build and Release DMG
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+      - name: Build archive
+        run: |
+          xcodebuild archive \
+            -scheme ClaudeUsageWidget \
+            -configuration Release \
+            -archivePath build/ClaudeUsageWidget.xcarchive \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Export app
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath build/ClaudeUsageWidget.xcarchive \
+            -exportPath build/export \
+            -exportOptionsPlist ExportOptions.plist
+
+      - name: Install create-dmg
+        run: brew install create-dmg
+
+      - name: Create DMG
+        run: |
+          create-dmg \
+            --volname "Claude Usage Widget" \
+            --window-size 540 360 \
+            --icon-size 128 \
+            --icon "ClaudeUsageWidget.app" 130 160 \
+            --app-drop-link 400 160 \
+            --no-internet-enable \
+            "build/ClaudeUsageWidget-${{ github.ref_name }}.dmg" \
+            "build/export/"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/ClaudeUsageWidget-${{ github.ref_name }}.dmg
+          body: |
+            ## Claude Usage Widget ${{ github.ref_name }}
+
+            Native macOS menu bar app showing Claude.ai plan usage as a color-coded ring.
+
+            ### Install
+            1. Download the `.dmg` below
+            2. Open it, drag **Claude Usage Widget** to Applications
+            3. Open the app — sign in once, stays signed in
+
+            > **macOS security note:** First launch may show "unidentified developer" — go to System Settings > Privacy & Security > Open Anyway.
+
+            ### Requirements
+            macOS 13 (Ventura) or later
