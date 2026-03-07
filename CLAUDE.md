@@ -111,16 +111,16 @@ create-dmg ...   # see docs/plans/implementation-plan.md
 
 ## Status
 
-- [ ] Design approved
-- [ ] Implementation plan written
-- [ ] Xcode project scaffolded
-- [ ] Auth (WKWebView login + persistent session)
-- [ ] API endpoint identified + UsageService built
-- [ ] Ring drawing (Core Graphics)
-- [ ] Dropdown menu UI
-- [ ] Color state logic
-- [ ] GitHub Actions build pipeline
-- [ ] GitHub repo created + first release
+- [x] Design approved
+- [x] Implementation plan written
+- [x] Xcode project scaffolded
+- [x] Auth (WKWebView login + persistent session)
+- [x] API endpoint identified + UsageService built
+- [x] Ring drawing (Core Graphics)
+- [x] Dropdown menu UI
+- [x] Color state logic
+- [x] GitHub Actions build pipeline
+- [x] GitHub repo created + first release
 
 ---
 
