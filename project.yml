@@ -1,0 +1,50 @@
+name: ClaudeUsageWidget
+options:
+  bundleIdPrefix: io.rsla
+  deploymentTarget:
+    macOS: "13.0"
+  xcodeVersion: "15.0"
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MACOSX_DEPLOYMENT_TARGET: "13.0"
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: ""
+
+targets:
+  ClaudeUsageWidget:
+    type: application
+    platform: macOS
+    deploymentTarget: "13.0"
+    sources:
+      - path: ClaudeUsageWidget
+        excludes:
+          - "**/*Tests*"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.rsla.ClaudeUsageWidget
+        INFOPLIST_FILE: ClaudeUsageWidget/Info.plist
+        CODE_SIGN_ENTITLEMENTS: ClaudeUsageWidget/ClaudeUsageWidget.entitlements
+        SWIFT_VERSION: "5.9"
+        MACOSX_DEPLOYMENT_TARGET: "13.0"
+        ENABLE_HARDENED_RUNTIME: YES
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
+
+  ClaudeUsageWidgetTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "13.0"
+    sources:
+      - path: ClaudeUsageWidgetTests
+    settings:
+      base:
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/ClaudeUsageWidget.app/Contents/MacOS/ClaudeUsageWidget"
+        SWIFT_VERSION: "5.9"
+        MACOSX_DEPLOYMENT_TARGET: "13.0"
+        GENERATE_INFOPLIST_FILE: YES
+    dependencies:
+      - target: ClaudeUsageWidget
