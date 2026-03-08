@@ -35,6 +35,9 @@ jobs:
             -exportPath build/export \
             -exportOptionsPlist ExportOptions.plist
 
+      - name: Strip quarantine attributes
+        run: xattr -cr build/export/ClaudeUsageWidget.app
+
       - name: Install create-dmg
         run: brew install create-dmg
 
@@ -64,7 +67,7 @@ jobs:
             2. Open it, drag **Claude Usage Widget** to Applications
             3. Open the app — sign in once, stays signed in
 
-            > **macOS security note:** First launch may show "unidentified developer" — go to System Settings > Privacy & Security > Open Anyway.
+            > **macOS security note:** If you see "damaged and can't be opened", run this in Terminal: `xattr -cr /Applications/ClaudeUsageWidget.app` then try again. Or right-click the app and choose Open.
 
             ### Requirements
             macOS 13 (Ventura) or later
