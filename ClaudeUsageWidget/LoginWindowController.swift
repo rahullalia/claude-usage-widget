@@ -1,9 +1,12 @@
 import AppKit
 import WebKit
 
-class LoginWindowController: NSWindowController, WKNavigationDelegate {
+class LoginWindowController: NSWindowController, WKNavigationDelegate, WKUIDelegate {
     weak var authManager: AuthManager?
     private var webView: WKWebView!
+
+    // Holds any OAuth popup windows (e.g. Google sign-in)
+    private var popupWindowControllers: [NSWindowController] = []
 
     convenience init() {
         let window = NSWindow(
@@ -21,8 +24,10 @@ class LoginWindowController: NSWindowController, WKNavigationDelegate {
     private func setupWebView() {
         let config = WKWebViewConfiguration()
         config.websiteDataStore = WKWebsiteDataStore.default()
+        config.preferences.javaScriptCanOpenWindowsAutomatically = true
         webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = self
+        webView.uiDelegate = self
         window?.contentView = webView
         loadLoginPage()
     }
@@ -37,6 +42,9 @@ class LoginWindowController: NSWindowController, WKNavigationDelegate {
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         guard let url = webView.url else { return }
         if isSuccessfulLoginURL(url) {
+            // Close any lingering popup windows
+            popupWindowControllers.forEach { $0.close() }
+            popupWindowControllers.removeAll()
             authManager?.loginDidSucceed()
         }
     }
@@ -48,5 +56,43 @@ class LoginWindowController: NSWindowController, WKNavigationDelegate {
         // Success: landed on home, chats, or settings — not on /login or /auth
         let loginPaths = ["/login", "/auth", "/oauth"]
         return !loginPaths.contains(where: { path.hasPrefix($0) })
+    }
+
+    // MARK: - WKUIDelegate (popup handling for Google OAuth)
+
+    func webView(
+        _ webView: WKWebView,
+        createWebViewWith configuration: WKWebViewConfiguration,
+        for navigationAction: WKNavigationAction,
+        windowFeatures: WKWindowFeatures
+    ) -> WKWebView? {
+        // Create a popup window for OAuth flows (e.g. Google sign-in)
+        let popupWindow = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 480, height: 600),
+            styleMask: [.titled, .closable, .resizable],
+            backing: .buffered,
+            defer: false
+        )
+        popupWindow.title = "Sign in"
+        popupWindow.center()
+
+        configuration.websiteDataStore = WKWebsiteDataStore.default()
+        let popupWebView = WKWebView(frame: popupWindow.contentView!.bounds, configuration: configuration)
+        popupWebView.autoresizingMask = [.width, .height]
+        popupWebView.navigationDelegate = self
+        popupWebView.uiDelegate = self
+        popupWindow.contentView?.addSubview(popupWebView)
+
+        let popupController = NSWindowController(window: popupWindow)
+        popupController.showWindow(nil)
+        popupWindow.makeKeyAndOrderFront(nil)
+        popupWindowControllers.append(popupController)
+
+        return popupWebView
+    }
+
+    func webViewDidClose(_ webView: WKWebView) {
+        // Clean up popup controllers whose webview was closed
+        popupWindowControllers.removeAll { $0.window?.contentView?.subviews.first == webView }
     }
 }

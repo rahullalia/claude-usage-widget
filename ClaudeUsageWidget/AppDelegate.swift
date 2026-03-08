@@ -1,7 +1,6 @@
 import AppKit
 import WebKit
 
-@main
 class AppDelegate: NSObject, NSApplicationDelegate {
 
     // MARK: - Components
@@ -11,6 +10,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var menuViewController: MenuViewController!
     private var authManager: AuthManager!
     private var usageService: UsageService?
+    private var pollingStarted = false
 
     // WKWebView lives here permanently — it holds the session cookies
     private var webView: WKWebView!
@@ -18,9 +18,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - App Lifecycle
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        setupWebView()
+        print(">>> applicationDidFinishLaunching called")
+        NSApp.setActivationPolicy(.accessory)
         setupStatusItem()
         setupPopover()
+        setupWebView()
         setupAuthManager()
     }
 
@@ -30,15 +32,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let config = WKWebViewConfiguration()
         config.websiteDataStore = WKWebsiteDataStore.default()
         webView = WKWebView(frame: .zero, configuration: config)
-        // Load claude.ai so the webview has the right origin for fetch() calls
-        webView.load(URLRequest(url: URL(string: "https://claude.ai")!))
+        webView.navigationDelegate = self
     }
 
     private func setupStatusItem() {
+        print(">>> setupStatusItem called")
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        updateStatusIcon(progress: 0.0, colorState: .normal)
+        print(">>> statusItem created, button = \(String(describing: statusItem.button))")
+        statusItem.button?.image = NSImage(systemSymbolName: "circle", accessibilityDescription: nil)
         statusItem.button?.action = #selector(togglePopover)
         statusItem.button?.target = self
+        print(">>> setupStatusItem done")
     }
 
     private func setupPopover() {
@@ -89,7 +93,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             usageService?.delegate = self
         }
         menuViewController.showLoading()
-        usageService?.startPolling()
+        // Load claude.ai first — polling starts in webView(_:didFinish:) once the page is ready
+        webView.load(URLRequest(url: URL(string: "https://claude.ai")!))
     }
 
     // MARK: - Sign Out
@@ -98,6 +103,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         usageService?.stopPolling()
         usageService?.resetCache()
         usageService = nil
+        pollingStarted = false
         updateStatusIcon(progress: 0.0, colorState: .normal)
         authManager.signOut()
     }
@@ -112,6 +118,17 @@ extension AppDelegate: AuthManagerDelegate {
 
     func authManagerDidSignOut(_ manager: AuthManager) {
         // Login window is shown by AuthManager automatically — nothing to do here
+    }
+}
+
+// MARK: - WKNavigationDelegate (main webView)
+
+extension AppDelegate: WKNavigationDelegate {
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        // Main webView finished loading claude.ai — now safe to run authenticated JS
+        guard usageService != nil, !pollingStarted else { return }
+        pollingStarted = true
+        usageService?.startPolling()
     }
 }
 

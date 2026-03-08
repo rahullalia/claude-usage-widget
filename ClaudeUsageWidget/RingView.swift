@@ -22,10 +22,10 @@ class RingView: NSView {
         colorState: RingColorState,
         size: CGSize = CGSize(width: 18, height: 18)
     ) -> NSImage {
-        let image = NSImage(size: size)
-        image.lockFocus()
-        drawRing(progress: progress, colorState: colorState, in: CGRect(origin: .zero, size: size))
-        image.unlockFocus()
+        let image = NSImage(size: size, flipped: false) { rect in
+            Self.drawRing(progress: progress, colorState: colorState, in: rect)
+            return true
+        }
         image.isTemplate = (colorState == .normal)
         return image
     }

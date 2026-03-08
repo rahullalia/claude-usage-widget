@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -19,6 +19,7 @@
 		C4F1A96ED753DE0DBA74B449 /* RingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B24B7DD535C785804768B340 /* RingView.swift */; };
 		D8BDD746710D4A7503A41BFD /* MenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F79B0C04B600DE4E034CFBB6 /* MenuView.swift */; };
 		D8CD1941E8CDC07A982F5EB2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D705336A2AB929001115064 /* AppDelegate.swift */; };
+		F122C8B82F5E3199000C0804 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = F122C8B72F5E3199000C0804 /* main.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -46,6 +47,7 @@
 		CC56F2E1EAAC21FF2273626F /* ClaudeUsageWidgetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeUsageWidgetTests.swift; sourceTree = "<group>"; };
 		E0BE9B7536A7ADD8E35AC0EB /* ModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelsTests.swift; sourceTree = "<group>"; };
 		E4EA7162C7D5EF409DC9D112 /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
+		F122C8B72F5E3199000C0804 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		F6B598A548B3E1707F4FC921 /* AuthManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManagerTests.swift; sourceTree = "<group>"; };
 		F79B0C04B600DE4E034CFBB6 /* MenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -75,6 +77,7 @@
 		D2FE89D0F9D6F523F9C0106D /* ClaudeUsageWidget */ = {
 			isa = PBXGroup;
 			children = (
+				F122C8B72F5E3199000C0804 /* main.swift */,
 				9D705336A2AB929001115064 /* AppDelegate.swift */,
 				E4EA7162C7D5EF409DC9D112 /* AuthManager.swift */,
 				3BBF79052C78C14D6D1B8B4B /* ClaudeUsageWidget.entitlements */,
@@ -181,6 +184,7 @@
 			files = (
 				D8CD1941E8CDC07A982F5EB2 /* AppDelegate.swift in Sources */,
 				65EC8EFF98EA6EDCD127627A /* AuthManager.swift in Sources */,
+				F122C8B82F5E3199000C0804 /* main.swift in Sources */,
 				01B13E599000A6F9536626B7 /* LoginWindowController.swift in Sources */,
 				D8BDD746710D4A7503A41BFD /* MenuView.swift in Sources */,
 				3BDE4F0A3C178440B42467C4 /* Models.swift in Sources */,
