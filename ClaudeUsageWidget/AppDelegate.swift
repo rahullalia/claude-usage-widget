@@ -141,6 +141,7 @@ extension AppDelegate: UsageServiceDelegate {
     }
 
     func usageService(_ service: UsageService, didFailWith error: UsageServiceError) {
+        print(">>> UsageService error: \(error)")
         let message: String
         switch error {
         case .notAuthenticated:

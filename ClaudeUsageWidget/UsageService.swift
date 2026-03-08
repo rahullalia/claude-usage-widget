@@ -63,47 +63,50 @@ class UsageService: NSObject {
     // MARK: - Internal fetch steps
 
     private func resolveOrgId(webView: WKWebView, completion: @escaping (Result<String, UsageServiceError>) -> Void) {
-        let js = "fetch('https://claude.ai/api/organizations').then(r => r.json()).then(d => JSON.stringify(d))"
-        webView.evaluateJavaScript(js) { result, error in
+        // callAsyncJavaScript properly awaits Promises — evaluateJavaScript cannot
+        let js = "return await fetch('https://claude.ai/api/organizations').then(r => r.json()).then(d => JSON.stringify(d))"
+        webView.callAsyncJavaScript(js, arguments: [:], in: nil, in: .defaultClient) { result in
             DispatchQueue.main.async {
-                if let error = error {
+                switch result {
+                case .failure(let error):
                     completion(.failure(.networkError(error.localizedDescription)))
-                    return
+                case .success(let value):
+                    guard let jsonString = value as? String,
+                          let data = jsonString.data(using: .utf8),
+                          let orgs = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]],
+                          let firstOrg = orgs.first,
+                          let uuid = firstOrg["uuid"] as? String else {
+                        completion(.failure(.orgIdNotFound))
+                        return
+                    }
+                    completion(.success(uuid))
                 }
-                guard let jsonString = result as? String,
-                      let data = jsonString.data(using: .utf8),
-                      let orgs = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]],
-                      let firstOrg = orgs.first,
-                      let uuid = firstOrg["uuid"] as? String else {
-                    completion(.failure(.orgIdNotFound))
-                    return
-                }
-                completion(.success(uuid))
             }
         }
     }
 
     private func fetchUsage(webView: WKWebView, orgId: String) {
         let url = "https://claude.ai/api/organizations/\(orgId)/usage"
-        let js = "fetch('\(url)').then(r => r.json()).then(d => JSON.stringify(d))"
-        webView.evaluateJavaScript(js) { [weak self] result, error in
+        let js = "return await fetch('\(url)').then(r => r.json()).then(d => JSON.stringify(d))"
+        webView.callAsyncJavaScript(js, arguments: [:], in: nil, in: .defaultClient) { [weak self] result in
             guard let self = self else { return }
             DispatchQueue.main.async {
-                if let error = error {
+                switch result {
+                case .failure(let error):
                     self.delegate?.usageService(self, didFailWith: .networkError(error.localizedDescription))
-                    return
-                }
-                guard let jsonString = result as? String,
-                      let data = jsonString.data(using: .utf8) else {
-                    self.delegate?.usageService(self, didFailWith: .parseError("Invalid response"))
-                    return
-                }
-                do {
-                    let usageData = try UsageData.decode(from: data)
-                    self.lastData = usageData
-                    self.delegate?.usageService(self, didUpdate: usageData)
-                } catch {
-                    self.delegate?.usageService(self, didFailWith: .parseError(error.localizedDescription))
+                case .success(let value):
+                    guard let jsonString = value as? String,
+                          let data = jsonString.data(using: .utf8) else {
+                        self.delegate?.usageService(self, didFailWith: .parseError("Invalid response"))
+                        return
+                    }
+                    do {
+                        let usageData = try UsageData.decode(from: data)
+                        self.lastData = usageData
+                        self.delegate?.usageService(self, didUpdate: usageData)
+                    } catch {
+                        self.delegate?.usageService(self, didFailWith: .parseError(error.localizedDescription))
+                    }
                 }
             }
         }
