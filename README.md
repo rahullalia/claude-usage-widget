@@ -55,9 +55,15 @@ This app only communicates with `claude.ai`. Your session is stored locally usin
 
 ---
 
+## Login Notes
+
+The login window uses an embedded WebView. Email/password login works reliably. Google OAuth works in most cases but can occasionally stall on the final redirect step for unsigned apps — if that happens, use email/password instead.
+
+---
+
 ## Status
 
-Early alpha. Built for personal use and trusted testers. Expect rough edges.
+v0.1.2 — functional, running daily. Built for personal use.
 
 ---
 

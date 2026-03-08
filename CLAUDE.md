@@ -4,7 +4,7 @@
 
 A native macOS menu bar app (Swift + AppKit) that displays Claude.ai plan usage at a glance. Shows a circular ring progress indicator in the menu bar that fills up as usage climbs, with color-coded states. Click to expand a dropdown with full usage details.
 
-**GitHub Repo:** `rahullalia/claude-usage-widget` (to be created)
+**GitHub Repo:** `rahullalia/claude-usage-widget` ([github.com/rahullalia/claude-usage-widget](https://github.com/rahullalia/claude-usage-widget))
 **Distribution:** `.dmg` via GitHub Releases (built by GitHub Actions)
 **Target:** macOS 13+ (Ventura and later)
 
@@ -44,6 +44,11 @@ claudeUsageWidget/
 - **No Keychain needed** — persistent WebView data store handles session cookies natively
 - **Core Graphics ring** — custom `NSView` draws the circular progress arc, no third-party libraries
 - **5-minute polling** — `Timer.scheduledTimer` fetches usage data every 5 minutes; manual refresh also available
+- **`main.swift` instead of `@main`** — explicit `app.delegate = delegate` before `app.run()` is required; `@main` does not wire NSApp.delegate without a nib file, so `applicationDidFinishLaunching` never fires without this
+- **`setupStatusItem()` must run before `setupWebView()`** — WKWebView init triggers WebKit process launch (Mach IPC) which can interfere with NSStatusBar registration on macOS Sonoma if status item hasn't been created yet
+- **`callAsyncJavaScript` not `evaluateJavaScript`** — fetch() returns a Promise; `evaluateJavaScript` returns the Promise object itself (unsupported type error); `callAsyncJavaScript` properly awaits it
+- **Navigation delegate gates polling start** — `startPolling()` is called only in `webView(_:didFinish:)` after claude.ai loads, not immediately after `webView.load()`, otherwise JS runs from blank origin with no cookies
+- **`xcodegen` manages the Xcode project** — edit `project.yml`, run `xcodegen generate`, never hand-edit `.xcodeproj`
 
 ---
 
@@ -54,6 +59,10 @@ claudeUsageWidget/
 3. App detects successful login by observing URL redirect to `claude.ai` homepage
 4. Session cookie persisted in `WKWebsiteDataStore.default()` — survives app restarts
 5. Sign Out: calls `WKWebsiteDataStore.default().removeData(...)` to wipe session
+
+### Google OAuth caveat
+
+`SOAuthorizationCoordinator` intercepts Google sign-in attempts in unsigned WKWebView apps and can block them. The `WKUIDelegate` popup handler (`webView(_:createWebViewWith:for:windowFeatures:)`) is implemented and handles most cases, but Google occasionally rejects unsigned apps at the final OAuth redirect step. **Workaround:** Add an email/password to the Claude account at claude.ai → Settings → Account — this makes login reliable without needing Apple Developer Program membership.
 
 ---
 
@@ -100,6 +109,12 @@ Ring always shows the **highest usage % across all three metrics**.
 # Open in Xcode
 open ClaudeUsageWidget.xcodeproj
 
+# Regenerate Xcode project after editing project.yml
+xcodegen generate
+
+# Regenerate app icon PNGs (after icon design changes)
+swift makeIcon.swift
+
 # Build from CLI
 xcodebuild -scheme ClaudeUsageWidget -configuration Release
 
@@ -121,9 +136,21 @@ create-dmg ...   # see docs/plans/implementation-plan.md
 - [x] Color state logic
 - [x] GitHub Actions build pipeline
 - [x] GitHub repo created + first release
+- [x] App icon (amber ring, dark slate bg) — `makeIcon.swift` generates all sizes
+- [x] Menu bar shows real RingView ring (not placeholder)
+- [x] Debug prints removed — production-clean code
+- [x] v0.1.2 tagged and pushed — DMG building via GitHub Actions
+
+---
+
+## Known Issues / Gotchas
+
+- WebContent sandbox errors in Xcode console are **expected noise** — WKWebView subprocess cannot access pasteboard/audio/launchservices when unsigned. Does not affect functionality.
+- `ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon` must be set in `project.yml` target settings for the app icon to compile. xcodegen does not add this automatically.
+- Finder may cache old app icons. Copy the `.app` to Desktop or run `killall Dock` to force refresh.
 
 ---
 
 ## Last Updated
 
-2026-03-07
+2026-03-08
