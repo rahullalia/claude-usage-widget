@@ -18,7 +18,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - App Lifecycle
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        print(">>> applicationDidFinishLaunching called")
         NSApp.setActivationPolicy(.accessory)
         setupStatusItem()
         setupPopover()
@@ -36,13 +35,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func setupStatusItem() {
-        print(">>> setupStatusItem called")
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        print(">>> statusItem created, button = \(String(describing: statusItem.button))")
-        statusItem.button?.image = NSImage(systemSymbolName: "circle", accessibilityDescription: nil)
+        let image = RingView.image(progress: 0.0, colorState: .normal)
+        statusItem.button?.image = image
+        statusItem.button?.imageScaling = .scaleProportionallyDown
         statusItem.button?.action = #selector(togglePopover)
         statusItem.button?.target = self
-        print(">>> setupStatusItem done")
     }
 
     private func setupPopover() {
@@ -141,7 +139,6 @@ extension AppDelegate: UsageServiceDelegate {
     }
 
     func usageService(_ service: UsageService, didFailWith error: UsageServiceError) {
-        print(">>> UsageService error: \(error)")
         let message: String
         switch error {
         case .notAuthenticated:
