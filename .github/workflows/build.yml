@@ -28,12 +28,10 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
 
-      - name: Export app
+      - name: Copy app from archive
         run: |
-          xcodebuild -exportArchive \
-            -archivePath build/ClaudeUsageWidget.xcarchive \
-            -exportPath build/export \
-            -exportOptionsPlist ExportOptions.plist
+          mkdir -p build/export
+          cp -R build/ClaudeUsageWidget.xcarchive/Products/Applications/ClaudeUsageWidget.app build/export/
 
       - name: Strip quarantine attributes
         run: xattr -cr build/export/ClaudeUsageWidget.app
