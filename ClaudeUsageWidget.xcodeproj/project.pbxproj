@@ -16,6 +16,7 @@
 		8EA1F829DC6AA8978562C8D5 /* RingViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 061F8320D3E73E35C08824E7 /* RingViewTests.swift */; };
 		8F9ED90FC13ADADA0779AD0A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 55E1104C0B872EB2007845ED /* Assets.xcassets */; };
 		A0AB1BD1919DAC20D0066CF8 /* UsageServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BD395ED69FE96C6A6AAB52F /* UsageServiceTests.swift */; };
+		A503A78AB07271FCBBB18D2B /* RefreshIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31CA26DF864E570115CB6D44 /* RefreshIcon.swift */; };
 		A71279EB6E937C4EADD8C2E5 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25194CA143CE94229B4E506A /* main.swift */; };
 		AFAA0BAD2197F3BD672F99E3 /* ModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0BE9B7536A7ADD8E35AC0EB /* ModelsTests.swift */; };
 		C4F1A96ED753DE0DBA74B449 /* RingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B24B7DD535C785804768B340 /* RingView.swift */; };
@@ -37,6 +38,7 @@
 		0048CC636DB0DBF8DB7BEC09 /* LoginWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginWindowController.swift; sourceTree = "<group>"; };
 		061F8320D3E73E35C08824E7 /* RingViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingViewTests.swift; sourceTree = "<group>"; };
 		25194CA143CE94229B4E506A /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		31CA26DF864E570115CB6D44 /* RefreshIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshIcon.swift; sourceTree = "<group>"; };
 		3B363DAB17FDD4CB08560C2C /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		3BBF79052C78C14D6D1B8B4B /* ClaudeUsageWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ClaudeUsageWidget.entitlements; sourceTree = "<group>"; };
 		55E1104C0B872EB2007845ED /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -88,6 +90,7 @@
 				25194CA143CE94229B4E506A /* main.swift */,
 				F79B0C04B600DE4E034CFBB6 /* MenuView.swift */,
 				3B363DAB17FDD4CB08560C2C /* Models.swift */,
+				31CA26DF864E570115CB6D44 /* RefreshIcon.swift */,
 				B24B7DD535C785804768B340 /* RingView.swift */,
 				BE5924B5B6A36639BD1C9B90 /* UsageService.swift */,
 			);
@@ -202,6 +205,7 @@
 				01B13E599000A6F9536626B7 /* LoginWindowController.swift in Sources */,
 				D8BDD746710D4A7503A41BFD /* MenuView.swift in Sources */,
 				3BDE4F0A3C178440B42467C4 /* Models.swift in Sources */,
+				A503A78AB07271FCBBB18D2B /* RefreshIcon.swift in Sources */,
 				C4F1A96ED753DE0DBA74B449 /* RingView.swift in Sources */,
 				30CDDF21A3FE066F30766C97 /* UsageService.swift in Sources */,
 				A71279EB6E937C4EADD8C2E5 /* main.swift in Sources */,

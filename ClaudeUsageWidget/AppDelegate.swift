@@ -11,6 +11,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var authManager: AuthManager!
     private var usageService: UsageService?
     private var pollingStarted = false
+    private var ringMetricMode: RingMetricMode = .saved
 
     // WKWebView lives here permanently — it holds the session cookies
     private var webView: WKWebView!
@@ -51,11 +52,23 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menuViewController.onSignOut = { [weak self] in
             self?.signOut()
         }
+        menuViewController.onSignIn = { [weak self] in
+            self?.authManager.showLoginWindow()
+        }
+        menuViewController.onToggleMode = { [weak self] mode in
+            guard let self = self else { return }
+            self.ringMetricMode = mode
+            if let data = self.usageService?.lastData {
+                let progress = data.ringValue(for: mode)
+                let colorState = data.ringColorState(for: mode)
+                self.updateStatusIcon(progress: progress, colorState: colorState)
+            }
+        }
 
         popover = NSPopover()
         popover.contentViewController = menuViewController
         popover.behavior = .transient
-        popover.contentSize = NSSize(width: 300, height: 260)
+        popover.contentSize = NSSize(width: 300, height: 280)
     }
 
     private func setupAuthManager() {
@@ -103,6 +116,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         usageService = nil
         pollingStarted = false
         updateStatusIcon(progress: 0.0, colorState: .normal)
+        menuViewController.updateAuthState(isSignedIn: false)
         authManager.signOut()
     }
 }
@@ -111,11 +125,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
 extension AppDelegate: AuthManagerDelegate {
     func authManagerDidAuthenticate(_ manager: AuthManager) {
+        menuViewController.updateAuthState(isSignedIn: true)
         startUsageService()
     }
 
     func authManagerDidSignOut(_ manager: AuthManager) {
-        // Login window is shown by AuthManager automatically — nothing to do here
+        menuViewController.updateAuthState(isSignedIn: false)
     }
 }
 
@@ -134,7 +149,9 @@ extension AppDelegate: WKNavigationDelegate {
 
 extension AppDelegate: UsageServiceDelegate {
     func usageService(_ service: UsageService, didUpdate data: UsageData) {
-        updateStatusIcon(progress: data.ringValue, colorState: data.ringColorState)
+        let progress = data.ringValue(for: ringMetricMode)
+        let colorState = data.ringColorState(for: ringMetricMode)
+        updateStatusIcon(progress: progress, colorState: colorState)
         menuViewController.update(with: data)
     }
 

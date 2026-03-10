@@ -100,6 +100,52 @@ final class ModelsTests: XCTestCase {
         XCTAssertNotNil(data.weeklyAllModels.resetsAt)
     }
 
+    // MARK: - RingMetricMode tests
+
+    func test_ringValue_sessionMode_returnsSessionPercent() {
+        let data = UsageData(
+            currentSession: UsageStat(percentUsed: 0.42, resetsAt: nil),
+            weeklyAllModels: UsageStat(percentUsed: 0.67, resetsAt: Date()),
+            weeklySonnetOnly: UsageStat(percentUsed: 0.23, resetsAt: Date()),
+            lastUpdated: Date()
+        )
+        XCTAssertEqual(data.ringValue(for: .session), 0.42, accuracy: 0.001)
+    }
+
+    func test_ringValue_weeklyMode_returnsMaxWeekly() {
+        let data = UsageData(
+            currentSession: UsageStat(percentUsed: 0.42, resetsAt: nil),
+            weeklyAllModels: UsageStat(percentUsed: 0.67, resetsAt: Date()),
+            weeklySonnetOnly: UsageStat(percentUsed: 0.23, resetsAt: Date()),
+            lastUpdated: Date()
+        )
+        XCTAssertEqual(data.ringValue(for: .weekly), 0.67, accuracy: 0.001)
+    }
+
+    func test_ringColorState_forMode_usesCorrectValue() {
+        let data = UsageData(
+            currentSession: UsageStat(percentUsed: 0.42, resetsAt: nil),
+            weeklyAllModels: UsageStat(percentUsed: 0.67, resetsAt: Date()),
+            weeklySonnetOnly: UsageStat(percentUsed: 0.23, resetsAt: Date()),
+            lastUpdated: Date()
+        )
+        XCTAssertEqual(data.ringColorState(for: .session), .normal)
+        XCTAssertEqual(data.ringColorState(for: .weekly), .amber)
+    }
+
+    func test_ringMetricMode_defaultIsSession() {
+        XCTAssertEqual(RingMetricMode.default, .session)
+    }
+
+    func test_barColorState_perRow() {
+        let normalStat = UsageStat(percentUsed: 0.42, resetsAt: nil)
+        let amberStat = UsageStat(percentUsed: 0.67, resetsAt: nil)
+        let criticalStat = UsageStat(percentUsed: 0.90, resetsAt: nil)
+        XCTAssertEqual(normalStat.barColorState, .normal)
+        XCTAssertEqual(amberStat.barColorState, .amber)
+        XCTAssertEqual(criticalStat.barColorState, .critical)
+    }
+
     func test_ringValue_fromRealData() throws {
         let json = """
         {

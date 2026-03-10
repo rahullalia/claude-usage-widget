@@ -19,6 +19,31 @@ public enum RingColorState: Equatable {
     }
 }
 
+// MARK: - RingMetricMode
+
+public enum RingMetricMode: String {
+    case session
+    case weekly
+
+    public static let `default`: RingMetricMode = .session
+
+    /// UserDefaults key for persisting the preference
+    public static let userDefaultsKey = "ringMetricMode"
+
+    /// Read the saved preference, falling back to default
+    public static var saved: RingMetricMode {
+        guard let raw = UserDefaults.standard.string(forKey: userDefaultsKey) else {
+            return .default
+        }
+        return RingMetricMode(rawValue: raw) ?? .default
+    }
+
+    /// Save the preference to UserDefaults
+    public func save() {
+        UserDefaults.standard.set(rawValue, forKey: Self.userDefaultsKey)
+    }
+}
+
 // MARK: - UsageStat
 
 public struct UsageStat {
@@ -45,6 +70,11 @@ public struct UsageStat {
         } else {
             return "resets in \(minutes)m"
         }
+    }
+
+    /// Color state for this individual stat's progress bar
+    public var barColorState: RingColorState {
+        .from(percent: percentUsed)
     }
 
     /// "Fri 9:00 AM" — returns nil if resetsAt is nil
@@ -83,6 +113,21 @@ public struct UsageData {
 
     public var ringColorState: RingColorState {
         .from(percent: ringValue)
+    }
+
+    /// Ring value for a specific metric mode
+    public func ringValue(for mode: RingMetricMode) -> Double {
+        switch mode {
+        case .session:
+            return currentSession.percentUsed
+        case .weekly:
+            return max(weeklyAllModels.percentUsed, weeklySonnetOnly.percentUsed)
+        }
+    }
+
+    /// Ring color state for a specific metric mode
+    public func ringColorState(for mode: RingMetricMode) -> RingColorState {
+        .from(percent: ringValue(for: mode))
     }
 }
 
