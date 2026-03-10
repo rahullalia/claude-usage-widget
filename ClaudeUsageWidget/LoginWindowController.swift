@@ -9,10 +9,6 @@ class LoginWindowController: NSWindowController, WKNavigationDelegate, WKUIDeleg
     // Holds any OAuth popup windows (e.g. Google sign-in)
     private var popupWindowControllers: [NSWindowController] = []
 
-    // Polls the claude.ai API to detect successful auth — catches login even when
-    // SOAuthorizationCoordinator intercepts OAuth and bypasses WKNavigationDelegate entirely
-    private var authCheckTimer: Timer?
-
     convenience init() {
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 520, height: 640),
@@ -39,7 +35,6 @@ class LoginWindowController: NSWindowController, WKNavigationDelegate, WKUIDeleg
     }
 
     deinit {
-        authCheckTimer?.invalidate()
         webView?.removeObserver(self, forKeyPath: "URL")
     }
 
@@ -56,55 +51,9 @@ class LoginWindowController: NSWindowController, WKNavigationDelegate, WKUIDeleg
     }
 
     private func loadLoginPage() {
-        NSLog("[LOGIN] loadLoginPage called")
         loginDetected = false
         let url = URL(string: "https://claude.ai/login")!
         webView.load(URLRequest(url: url))
-        startAuthPolling()
-    }
-
-    // MARK: - Auth Polling (API-based)
-
-    private func startAuthPolling() {
-        authCheckTimer?.invalidate()
-        NSLog("[LOGIN] Starting auth polling timer")
-        authCheckTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
-            self?.checkAuthViaAPI()
-        }
-    }
-
-    private func stopAuthPolling() {
-        authCheckTimer?.invalidate()
-        authCheckTimer = nil
-    }
-
-    private func checkAuthViaAPI() {
-        guard !loginDetected, let webView = webView else {
-            stopAuthPolling()
-            return
-        }
-        let js = "return await fetch('/api/organizations').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(d => d.length > 0 ? 'authenticated' : 'none')"
-        webView.callAsyncJavaScript(js, arguments: [:], in: nil, in: .defaultClient) { [weak self] result in
-            guard let self = self, !self.loginDetected else { return }
-            switch result {
-            case .success(let value):
-                if let status = value as? String, status == "authenticated" {
-                    NSLog("[LOGIN] API auth check succeeded — closing login window")
-                    DispatchQueue.main.async {
-                        guard !self.loginDetected else { return }
-                        self.loginDetected = true
-                        self.stopAuthPolling()
-                        self.popupWindowControllers.forEach { $0.close() }
-                        self.popupWindowControllers.removeAll()
-                        self.authManager?.loginDidSucceed()
-                    }
-                } else {
-                    NSLog("[LOGIN] API auth check: not authenticated yet")
-                }
-            case .failure:
-                NSLog("[LOGIN] API auth check: request failed (not logged in yet)")
-            }
-        }
     }
 
     // MARK: - Login Detection
@@ -112,7 +61,7 @@ class LoginWindowController: NSWindowController, WKNavigationDelegate, WKUIDeleg
     private func checkForSuccessfulLogin(url: URL) {
         guard !loginDetected, isSuccessfulLoginURL(url) else { return }
         loginDetected = true
-        stopAuthPolling()
+        // Close any lingering popup windows
         popupWindowControllers.forEach { $0.close() }
         popupWindowControllers.removeAll()
         authManager?.loginDidSucceed()
