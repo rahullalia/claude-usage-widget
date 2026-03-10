@@ -19,8 +19,11 @@ claudeUsageWidget/
     UsageService.swift       # API fetching, polling timer, data models
     AuthManager.swift        # WKWebView login, persistent session, sign-out
     RingView.swift           # Core Graphics ring drawing (NSView subclass)
-    MenuViewController.swift # Dropdown content (progress bars, labels)
+    MenuView.swift           # Popover UI (progress bars, segmented toggle, auth states)
+    RefreshIcon.swift        # Teenyicons refresh SVG drawn via CGPath
+    Models.swift             # UsageData, UsageStat, RingColorState, RingMetricMode
     LoginWindowController.swift  # WKWebView login window
+    main.swift               # App entry point (XCTest-aware)
     Info.plist
     Assets.xcassets/
   ClaudeUsageWidget.xcodeproj/
@@ -28,6 +31,8 @@ claudeUsageWidget/
     plans/
       2026-03-07-menu-bar-widget-design.md   # Approved design doc
       2026-03-07-implementation-plan.md       # Step-by-step build plan
+      2026-03-10-v0.2.0-popover-redesign.md  # v0.2.0 design spec
+      2026-03-10-v0.2.0-implementation-plan.md # v0.2.0 build plan
   .github/
     workflows/
       build.yml              # GitHub Actions: build + package .dmg on push to main
@@ -49,6 +54,10 @@ claudeUsageWidget/
 - **`callAsyncJavaScript` not `evaluateJavaScript`** — fetch() returns a Promise; `evaluateJavaScript` returns the Promise object itself (unsupported type error); `callAsyncJavaScript` properly awaits it
 - **Navigation delegate gates polling start** — `startPolling()` is called only in `webView(_:didFinish:)` after claude.ai loads, not immediately after `webView.load()`, otherwise JS runs from blank origin with no cookies
 - **`xcodegen` manages the Xcode project** — edit `project.yml`, run `xcodegen generate`, never hand-edit `.xcodeproj`
+- **`main.swift` detects XCTest** — when running under XCTest, a minimal `TestAppDelegate` is used instead of `AppDelegate` to avoid launching the full UI (NSStatusItem, WKWebView, etc.) which crashes the test runner
+- **Ring metric toggle** — `RingMetricMode` enum (`.session` / `.weekly`) persisted in `UserDefaults`; segmented control in popover lets user switch what the ring shows
+- **Auth-aware footer** — footer button swaps between "Sign In" and "Sign Out" based on auth state; "Sign In" opens the login window
+- **Custom RefreshButton** — draws the teenyicons refresh SVG via `CGPath` at render time; strokes with `NSColor.secondaryLabelColor` for automatic light/dark adaptation
 
 ---
 
@@ -89,7 +98,7 @@ struct UsageData {
 | 60–84% | Amber (#F59E0B) |
 | 85–100% | Red (#EF4444) |
 
-Ring always shows the **highest usage % across all three metrics**.
+Ring shows **session usage** by default (configurable via the popover toggle). In weekly mode, it shows the highest % across weekly metrics.
 
 ---
 
@@ -140,6 +149,11 @@ create-dmg ...   # see docs/plans/implementation-plan.md
 - [x] Menu bar shows real RingView ring (not placeholder)
 - [x] Debug prints removed — production-clean code
 - [x] v0.1.2 tagged and pushed — DMG building via GitHub Actions
+- [x] v0.2.0: Popover redesign — custom progress bars, semantic colors, light/dark mode
+- [x] v0.2.0: Ring metric toggle — Session/Weekly segmented control with UserDefaults persistence
+- [x] v0.2.0: Auth-aware footer — Sign In/Sign Out swap, signed-out empty state
+- [x] v0.2.0: Custom refresh icon — teenyicons SVG drawn via CGPath
+- [x] v0.2.0: Test runner fix — XCTest-aware main.swift
 
 ---
 
@@ -153,4 +167,4 @@ create-dmg ...   # see docs/plans/implementation-plan.md
 
 ## Last Updated
 
-2026-03-08
+2026-03-10
