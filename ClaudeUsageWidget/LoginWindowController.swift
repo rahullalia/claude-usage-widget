@@ -70,8 +70,14 @@ class LoginWindowController: NSWindowController, WKNavigationDelegate, WKUIDeleg
     // MARK: - WKNavigationDelegate
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        // Check the finishing webView's URL (could be main or popup)
         guard let url = webView.url else { return }
         checkForSuccessfulLogin(url: url)
+
+        // Also check the main webView in case it was redirected by a popup completing
+        if webView !== self.webView, let mainURL = self.webView?.url {
+            checkForSuccessfulLogin(url: mainURL)
+        }
     }
 
     // Internal so tests can verify this logic
@@ -119,5 +125,10 @@ class LoginWindowController: NSWindowController, WKNavigationDelegate, WKUIDeleg
     func webViewDidClose(_ webView: WKWebView) {
         // Clean up popup controllers whose webview was closed
         popupWindowControllers.removeAll { $0.window?.contentView?.subviews.first == webView }
+
+        // After OAuth popup closes, reload main webView — if login succeeded,
+        // claude.ai will redirect to home (which triggers login detection)
+        guard !loginDetected else { return }
+        self.webView.load(URLRequest(url: URL(string: "https://claude.ai/")!))
     }
 }
