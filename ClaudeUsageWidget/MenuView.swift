@@ -162,6 +162,8 @@ class MenuViewController: NSViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        // Apply deferred auth state (updateAuthState may have been called before view loaded)
+        applyAuthState()
     }
 
     // MARK: - Setup
@@ -338,6 +340,12 @@ class MenuViewController: NSViewController {
 
     func updateAuthState(isSignedIn: Bool) {
         self.isSignedIn = isSignedIn
+        // View may not be loaded yet (popover is lazy) — applyAuthState runs in viewDidLoad
+        guard isViewLoaded else { return }
+        applyAuthState()
+    }
+
+    private func applyAuthState() {
         usageStack.isHidden = !isSignedIn
         emptyStateView.isHidden = isSignedIn
         refreshButton.isEnabled = isSignedIn
