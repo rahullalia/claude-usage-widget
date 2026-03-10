@@ -4,6 +4,7 @@ import WebKit
 class LoginWindowController: NSWindowController, WKNavigationDelegate, WKUIDelegate {
     weak var authManager: AuthManager?
     private var webView: WKWebView!
+    private var loginDetected = false
 
     // Holds any OAuth popup windows (e.g. Google sign-in)
     private var popupWindowControllers: [NSWindowController] = []
@@ -28,25 +29,49 @@ class LoginWindowController: NSWindowController, WKNavigationDelegate, WKUIDeleg
         webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = self
         webView.uiDelegate = self
+        webView.addObserver(self, forKeyPath: "URL", options: .new, context: nil)
         window?.contentView = webView
         loadLoginPage()
     }
 
+    deinit {
+        webView?.removeObserver(self, forKeyPath: "URL")
+    }
+
+    // KVO on webView.url catches client-side routing (SPA navigations that don't trigger didFinish)
+    override func observeValue(
+        forKeyPath keyPath: String?,
+        of object: Any?,
+        change: [NSKeyValueChangeKey: Any]?,
+        context: UnsafeMutableRawPointer?
+    ) {
+        if keyPath == "URL", let url = webView?.url {
+            checkForSuccessfulLogin(url: url)
+        }
+    }
+
     private func loadLoginPage() {
+        loginDetected = false
         let url = URL(string: "https://claude.ai/login")!
         webView.load(URLRequest(url: url))
+    }
+
+    // MARK: - Login Detection
+
+    private func checkForSuccessfulLogin(url: URL) {
+        guard !loginDetected, isSuccessfulLoginURL(url) else { return }
+        loginDetected = true
+        // Close any lingering popup windows
+        popupWindowControllers.forEach { $0.close() }
+        popupWindowControllers.removeAll()
+        authManager?.loginDidSucceed()
     }
 
     // MARK: - WKNavigationDelegate
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         guard let url = webView.url else { return }
-        if isSuccessfulLoginURL(url) {
-            // Close any lingering popup windows
-            popupWindowControllers.forEach { $0.close() }
-            popupWindowControllers.removeAll()
-            authManager?.loginDidSucceed()
-        }
+        checkForSuccessfulLogin(url: url)
     }
 
     // Internal so tests can verify this logic
