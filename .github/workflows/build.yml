@@ -62,12 +62,18 @@ jobs:
 
             Native macOS menu bar app showing Claude.ai plan usage as a color-coded ring.
 
-            ### Install
+            ### Install (macOS only)
+
             1. Download the `.dmg` below
             2. Open it, drag **Claude Usage Widget** to Applications
-            3. Open the app — sign in once, stays signed in
+            3. Open Terminal and run:
+               ```
+               sudo xattr -cr /Applications/ClaudeUsageWidget.app
+               ```
+               Enter your Mac password when prompted.
+            4. Open the app — sign in once, stays signed in
 
-            > **macOS security note:** If you see "damaged and can't be opened", run this in Terminal: `xattr -cr /Applications/ClaudeUsageWidget.app` then try again. Or right-click the app and choose Open.
+            > **Why step 3?** macOS blocks apps that aren't code-signed with an Apple Developer certificate. This command tells macOS it's safe to run. You only need to do this once.
 
             ### Requirements
             macOS 13 (Ventura) or later

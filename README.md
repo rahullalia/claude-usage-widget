@@ -15,13 +15,18 @@ A small ring in your menu bar fills up as you use Claude. It turns amber when yo
 
 ---
 
-## Download
+## Install (macOS only)
 
-Go to [Releases](../../releases) and download the latest `.dmg`. Open it, drag Claude Usage Widget to Applications, and you're done.
+1. Go to [Releases](../../releases) and download the latest `.dmg`
+2. Open the `.dmg` and drag **Claude Usage Widget** to your Applications folder
+3. Open Terminal and run this command (required for unsigned apps):
+   ```
+   sudo xattr -cr /Applications/ClaudeUsageWidget.app
+   ```
+   Enter your Mac password when prompted.
+4. Open the app. A login window will appear — sign in to Claude once, and the app stays signed in.
 
-On first launch, a window will open asking you to sign in to Claude. Log in once — the app stays signed in until you explicitly sign out.
-
-> **Note:** macOS may show a security prompt the first time ("App from unidentified developer"). Go to System Settings > Privacy & Security > Open Anyway.
+> **Why step 3?** macOS blocks apps that aren't signed with an Apple Developer certificate. This is a free, open-source app and isn't code-signed yet, so macOS flags it as "damaged." The command above tells macOS it's safe to run. You only need to do this once.
 
 ---
 
@@ -63,7 +68,7 @@ The login window uses an embedded WebView. Email/password login works reliably. 
 
 ## Status
 
-v0.1.2 — functional, running daily. Built for personal use.
+v0.2.0 — functional, running daily. Built for personal use. macOS only.
 
 ---
 
